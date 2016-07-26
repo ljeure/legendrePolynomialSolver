@@ -59,7 +59,6 @@ def findLegendreRoots(n):
     converged.append(True)
     s1_tilde.append(0)
     s2_tilde.append(0)
-    print "yes"
 
   all_roots_converged = False
 
@@ -82,9 +81,9 @@ def findLegendreRoots(n):
         s1_tilde[i] = S1(n, roots[i]) - sum1
         s2_tilde[i] = S2(n, roots[i]) - sum2
 
-    # nudge roots towards actual roots
-    for i in range(n):
-      if not converged[i]:
+        # nudge roots towards actual roots
+        #for i in range(n):
+        #if not converged[i]:
 
         # householder method 1: Newton-Raphson
         #u_new = roots[i] - 1/(s1_tilde[i])
@@ -103,7 +102,22 @@ def findLegendreRoots(n):
       if not all_roots_converged:
         break
 
+  return sorted(roots)
 
-  print sorted(roots)
-    
-findLegendreRoots(21)
+
+# calculate the weights to be used for Gauss Legendre quadrature
+def calculateWeights(roots):
+  n = len(roots)
+  weights = list()
+  for i in range(n):
+    weights.append( - (2*roots[i]**2 - 2) / (n*P(n-1, roots[i]))**2)
+  
+  return weights
+
+lRoots = findLegendreRoots(15)
+print 
+print "roots:"
+print lRoots
+print
+print "weights:"
+print calculateWeights(lRoots)
