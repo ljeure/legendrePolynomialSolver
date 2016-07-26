@@ -14,17 +14,6 @@ def P(n, x):
     value = c/b*x*P(n-1, x) - a/b*P(n-2,x)
     return value
 
-# not currently used
-'''
-def F(m, x):
-  if x == 0:
-    return 0
-  if m == 1:
-    return (x**2 - 1)/(2*x)
-
-  return 1/(2*m*(x - (m - 1)*F(m-1,x)))
-'''
-
 # P'/P
 def S1(m, x):
   num = m*x - m*P(m-1,x)/P(m,x)
@@ -50,30 +39,24 @@ def findLegendreRoots(n):
     s1_tilde.append(0)
     s2_tilde.append(0)
 
-  '''
-  for i in range(n/2):
-    roots.append(-roots[i])
-    converged.append(False)
-    s1_tilde.append(0)
-    s2_tilde.append(0)
-
-  if n % 2 == 1:
-    roots.append(0.0)
+  if n%2 == 1:
+    roots.append(0.)
     converged.append(True)
     s1_tilde.append(0)
     s2_tilde.append(0)
-  '''
+
+
   all_roots_converged = False
 
   # use the Alberth-Housholder_n method to nudge guesses towards roots
   while not all_roots_converged:
     
     # set S tildes
-    for i in range(n/2):
+    for i in range((n+1)/2):
       if not converged[i]:
         sum1 = 0
         sum2 = 0
-        for j in range(n/2):
+        for j in range((n+1)/2):
           if j != i:
             sum1 += 1/(roots[i] - roots[j])
             sum2 += -1/(roots[i] - roots[j])**2
@@ -86,25 +69,37 @@ def findLegendreRoots(n):
         
         # householder method 2  Halley    
         u_new = roots[i] - 2*s1_tilde[i] / (s1_tilde[i]**2 - s2_tilde[i])
-
-        # if this is the actual root
-        if abs(u_new - roots[i]) < e1:
-          if P(n, u_new) < e2:
-            converged[i] = True
+        u_old = roots[i]
         roots[i] = u_new
 
-    for i in range(n/2):
+        # if this is the actual root
+        if abs(u_new - u_old) < e1:
+          if P(n, u_new) < e2:
+            converged[i] = True
+
+            # if this root equals another root
+            for j in range((n+1)/2):
+              if j != i:
+                if abs(roots[j] - roots[i]) < e1:
+                  print "root is not actually converged: "
+                  print roots[i]
+                  print
+
+                  # reset the root to its original guess
+                  roots[i] = - 2**(-.5*(i+1)) +1
+                  converged[i] = False
+
+
+    for i in range((n+1)/2):
       all_roots_converged = converged[i]
       if not all_roots_converged:
         break
   
-  # add negative roots, and zero root if n is odd
+  # add negative roots
   for i in range(n/2):
     roots.append(-roots[i])
-  if n%2 == 1:
-    roots.append(0.)
 
-  return sorted(roots)
+  return roots
 
 # calculate the weights to be used for Gauss Legendre quadrature
 def calculateWeights(roots):
@@ -115,7 +110,12 @@ def calculateWeights(roots):
   
   return weights
 
-lRoots = findLegendreRoots(15)
+
+n = 64
+lRoots = sorted(findLegendreRoots(n))
+print
+print "for n:"
+print n
 print 
 print "roots:"
 print lRoots
