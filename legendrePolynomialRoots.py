@@ -15,6 +15,7 @@ def P(n, x):
     return value
 
 # not currently used
+'''
 def F(m, x):
   if x == 0:
     return 0
@@ -22,6 +23,7 @@ def F(m, x):
     return (x**2 - 1)/(2*x)
 
   return 1/(2*m*(x - (m - 1)*F(m-1,x)))
+'''
 
 # P'/P
 def S1(m, x):
@@ -48,6 +50,7 @@ def findLegendreRoots(n):
     s1_tilde.append(0)
     s2_tilde.append(0)
 
+  '''
   for i in range(n/2):
     roots.append(-roots[i])
     converged.append(False)
@@ -59,31 +62,24 @@ def findLegendreRoots(n):
     converged.append(True)
     s1_tilde.append(0)
     s2_tilde.append(0)
-
+  '''
   all_roots_converged = False
-
-  roun = 0
 
   # use the Alberth-Housholder_n method to nudge guesses towards roots
   while not all_roots_converged:
-    roun += 1
     
     # set S tildes
-    for i in range(n):
+    for i in range(n/2):
       if not converged[i]:
         sum1 = 0
         sum2 = 0
-        for j in range(n):
+        for j in range(n/2):
           if j != i:
             sum1 += 1/(roots[i] - roots[j])
             sum2 += -1/(roots[i] - roots[j])**2
     
         s1_tilde[i] = S1(n, roots[i]) - sum1
         s2_tilde[i] = S2(n, roots[i]) - sum2
-
-        # nudge roots towards actual roots
-        #for i in range(n):
-        #if not converged[i]:
 
         # householder method 1: Newton-Raphson
         #u_new = roots[i] - 1/(s1_tilde[i])
@@ -97,13 +93,18 @@ def findLegendreRoots(n):
             converged[i] = True
         roots[i] = u_new
 
-    for i in range(n):
+    for i in range(n/2):
       all_roots_converged = converged[i]
       if not all_roots_converged:
         break
+  
+  # add negative roots, and zero root if n is odd
+  for i in range(n/2):
+    roots.append(-roots[i])
+  if n%2 == 1:
+    roots.append(0.)
 
   return sorted(roots)
-
 
 # calculate the weights to be used for Gauss Legendre quadrature
 def calculateWeights(roots):
@@ -121,4 +122,4 @@ print lRoots
 print
 print "weights:"
 print calculateWeights(lRoots)
-
+print
