@@ -1,6 +1,14 @@
+import datetime
 e1 = 1e-6
 e2 = 1e-6
 
+
+'''
+@brief    the Legendre polynomial of degree n evaluated at x
+@param    n an integer >=0: the order of the polynomial
+@param    x in (-1,1), the point at which to evaluate the polynomial
+@return   the value of the Legendre polynomial of degree n at x
+'''
 def P(n, x):
   
   if n == 0:
@@ -14,17 +22,41 @@ def P(n, x):
     value = c/b*x*P(n-1, x) - a/b*P(n-2,x)
     return value
 
-# P'/P
+
+'''
+@brief    the first logarithmic derivative of a Legendre polynomial
+@param    m the order of the polynomial
+@param    x point at which to evaluate the logarithmic derivative
+@return   the value of the logarithmic derivative at x
+'''
 def S1(m, x):
   num = m*x - m*P(m-1,x)/P(m,x)
   denom = x**2 - 1
   return num/denom
 
+
+'''
+@brief    the second logarithmic derivative of a Legendre polynomial
+@param    m the order of the polynomial
+@param    x point at which to evaluate the logarithmic derivative
+@return   the value of the logarithmic derivative at x
+'''
 def S2(m, x):
   num = m*(m+1) + S1(m,x) * ((1-x**2)* S1(m,x) - 2*x)
   denom = 1-x**2
   return -num/denom
 
+
+'''
+@brief    finds the roots of Legendre polynomial of order n
+@detail   guesses for positive roots are set at logarithmic intervals. 
+          Positive roots are found simultaneously using an Alberth-Householder-n
+          method. Each guess is successively nudged towards a true root.
+          When all the positive roots are converged, their negatives are added
+          to the list of roots, as well as the root x=0 if n is odd.
+@param    n the order of the polynomial
+@return   a list of the roots of the polynomial
+'''
 def findLegendreRoots(n):
 
   roots=list()
@@ -51,9 +83,16 @@ def findLegendreRoots(n):
   # use the Alberth-Housholder_n method to nudge guesses towards roots
   while not all_roots_converged:
     
+    print
+    print "new round-------------------------------------------------------:"
     # set S tildes
     for i in range((n+1)/2):
+      if converged[i]:
+        print i
+        print "converged"
+        print roots[i]
       if not converged[i]:
+        print i
         sum1 = 0
         sum2 = 0
         for j in range((n+1)/2):
@@ -72,15 +111,25 @@ def findLegendreRoots(n):
         u_old = roots[i]
         roots[i] = u_new
 
+
+        # print value if its absolute value is greater than 1
+        if abs(roots[i]) > 1:
+          print i
+          print roots[i]
+          print
+
         # if this is the actual root
         if abs(u_new - u_old) < e1:
           if P(n, u_new) < e2:
             converged[i] = True
+            print i
+            print "converged to "
+            print roots[i]
 
-            # if this root equals another root
+            # if this root equals another root or it is less than 0
             for j in range((n+1)/2):
               if j != i:
-                if abs(roots[j] - roots[i]) < e1:
+                if abs(roots[j] - roots[i]) < e1 or roots[i] <= 0.:
                   print "root is not actually converged: "
                   print roots[i]
                   print
@@ -101,7 +150,12 @@ def findLegendreRoots(n):
 
   return roots
 
-# calculate the weights to be used for Gauss Legendre quadrature
+
+'''
+@brief    calculates the weights to be used in Gauss-Legendre Quadrature
+@param    roots a list containing the roots of the Legendre polynomial
+@return   a list of weights matched by index to the list of roots
+'''
 def calculateWeights(roots):
   n = len(roots)
   weights = list()
@@ -111,7 +165,9 @@ def calculateWeights(roots):
   return weights
 
 
-n = 64
+n = 30
+print
+print datetime.datetime.now()
 lRoots = sorted(findLegendreRoots(n))
 print
 print "for n:"
@@ -123,3 +179,7 @@ print
 print "weights:"
 print calculateWeights(lRoots)
 print
+
+'''
+takes ten minutes to calculate roots and weights for n = 30
+'''
